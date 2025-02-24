@@ -1,6 +1,6 @@
 class Info:
     
-    def __init__(self, name, pin, email, amount):
+    def __init__(self, name, email, amount, pin):
         self.name = name.strip().title()
         self.email = email.strip().lower()
         self.amount = int(amount)
@@ -32,8 +32,8 @@ class Info:
             print("Account does not exist")
 
 class Transactions(Info):
-    def __init__(self, name, pin, email, amount):
-        super().__init__(name, pin, email, amount)
+    def __init__(self, name, email, amount, pin):
+        super().__init__(name, email, amount, pin)
         self.debit_transactions = []
         self.credit_transactions = []
         self.all_transactions = []
@@ -50,7 +50,7 @@ class Transactions(Info):
     def credit_transaction(self, credit, description):
         if self.amount >= int(credit):
             self.amount-= int(credit)
-            print(f"Account Balance on Credit: {self.amount}")
+            print(f"Account Balance: {self.amount}")
         else:
             print(f"Failed Insufficient account balance. Your account balance is {self.amount}")
 
@@ -62,15 +62,64 @@ class Transactions(Info):
         if not self.all_transactions:
             print("No transactions yet")
             return
-        print("-----------Transaction histrory----------------------")
-        for transactions in self.all_transactions:
-            type_label = "DEPOSIT" if transactions["type"] == "Debit" else "WITHDRAWAL"
+        print("-----------Transaction history----------------------")
+        for x in self.all_transactions:
+            type_label = "DEPOSIT" if x["type"] == "Debit" else "WITHDRAWAL"
            
-            print(f"{type_label}:{transactions["amount"]} - {transactions["description"]}")
+            print(f"{type_label}:{x["amount"]} - {x["description"]}")
         print("---------------------------------------------------------")
 
-bank = Transactions("Reagan Mogambi", 4987, "reaganmogambi@gmail.com", 4000)
-bank.profile_info()
-bank.debit_transaction(1000, "salary")
-bank.credit_transaction(500, "rent")
-bank.transaction_history()
+user_account = None
+transactions = None
+
+while True:
+    try:
+        print("Welcome to the Reagan FinApp. Please select an option to continue (1-4)")
+        print("1. Create an account\n2. Login to your account\n3. Deposit money\n4. Withdraw money\n5. Financial statement\n6. Exit")
+        option = int(input("Please, enter your option to proceed: "))
+        
+
+        if option == 1:
+            print("Please enter the following to open an account")
+
+            name = input("Enter your full name: ").strip().title()
+            email = input("Enter your email: ").strip().lower()
+            amount = int(input("Enter the amount you would wish to deposit to your account: "))
+            pin = int(input("Enter your pin(four digits): "))
+
+            user_account = Info(name, email, amount, pin)
+            transactions = Transactions(name, email, amount, pin)
+            user_account.profile_info()
+        
+        elif option == 2:
+            user_account.login()
+
+
+        elif option == 3:
+            if user_account is None or transactions is None:
+                print("Account not found, create an account")
+                continue
+            debit = int(input("Please enter the amount to deposit: "))
+            description = input("Please enter a description of the transaction: ")
+            transactions.debit_transaction(debit = debit, description = description)
+            user_account.amount = transactions.amount
+
+        elif option == 4:
+            if user_account is None or transactions is None:
+                print("User account not found. Please create an account first")
+                continue
+            
+            credit = int(input("Enter the amount to withdraw: "))
+            description = input("Enter a description of the withdrawal: ")
+            transactions.credit_transaction(credit = credit, description = description)
+            user_account.amount = transactions.amount
+
+        elif option == 5:
+           
+            transactions.transaction_history()
+
+        elif option == 6:
+            print("Exiting the system, goodbye!")
+            break
+    except ValueError:
+        print("Invalid input, please enter a number")
